@@ -1,5 +1,7 @@
 from functools import lru_cache
 
+from fastapi import Depends
+
 from app.clients.mapbox_geocoding_client import MapboxGeocodingClient
 from app.config import Settings, get_settings
 from app.services.address_query_builder import AddressQueryBuilder
@@ -23,14 +25,14 @@ def get_geocoding_cache_service() -> GeocodingCacheService:
 
 
 def get_geocoding_service(
-    query_builder: AddressQueryBuilder | None = None,
-    provider_client: MapboxGeocodingClient | None = None,
-    cache_service: GeocodingCacheService | None = None,
+    query_builder: AddressQueryBuilder = Depends(get_query_builder),
+    provider_client: MapboxGeocodingClient = Depends(get_mapbox_client),
+    cache_service: GeocodingCacheService = Depends(get_geocoding_cache_service),
 ) -> GeocodingService:
     return GeocodingService(
-        query_builder=query_builder or get_query_builder(),
-        provider_client=provider_client or get_mapbox_client(),
-        cache_service=cache_service or get_geocoding_cache_service(),
+        query_builder=query_builder,
+        provider_client=provider_client,
+        cache_service=cache_service,
     )
 
 
